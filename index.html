@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Artist</title>
+    <style>
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f0f0; 
+        }
+        .container {
+            text-align: center;
+        }
+        .color-picker {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .color-box {
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .color-box.selected {
+            height: 35px;
+            width: 35px;
+            border: 2px solid black;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(12, 30px);
+            gap: 0;
+            justify-content: center;
+        }
+        .pixel {
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        #clear-btn {
+            margin: 15px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+        }
+        #share-btn {
+            margin: 15px;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pixel Artist</h1>
+        <div id="color-picker" class="color-picker"></div>
+        <div id="grid"></div>
+        <button id="clear-btn">Clear Grid</button>
+        <button id="share-btn">Share</button>
+
+        <script>
+            let ROWS = 12;
+            let COLS = 12;
+
+            // Define colors array
+            const COLORS = ['black', 'white', 'red', 'orange', 'blue', 'green', 'yellow', 'purple', 'pink'];
+            
+            // Initialize current color
+            let currentColor = 'black';
+
+            // Create color picker
+            function createColorPicker() {
+                const colorPicker = document.getElementById('color-picker');
+                COLORS.forEach(color => {
+                    const colorBox = document.createElement('div');
+                    colorBox.classList.add('color-box');
+                    colorBox.style.backgroundColor = color;
+                    if (color === currentColor) {
+                        colorBox.classList.add('selected');
+                    }
+                    colorPicker.appendChild(colorBox);
+                });
+                colorPicker.addEventListener('click', function(event) {
+                    // Check if the clicked element is a color box
+                    if (event.target.classList.contains('color-box')) {
+                        // Remove selected from all color boxes
+                        document.querySelectorAll('.color-box').forEach(function(box) {
+                            box.classList.remove('selected');
+                        });
+
+                        // Add selected to clicked box
+                        event.target.classList.add('selected');
+                        
+                        // Set new background color
+                        currentColor = event.target.style.backgroundColor;
+                        }
+                    });
+            }
+
+            // Create grid
+            function createGrid(initialPattern) {
+                const grid = document.getElementById('grid');
+                for (let i = 0; i < ROWS * COLS; i++) {
+                    const pixel = document.createElement('div');
+                    pixel.classList.add('pixel');
+                    pixel.style.backgroundColor = COLORS[initialPattern[i]];
+                    grid.appendChild(pixel);
+                }
+                grid.addEventListener('click', function(event) {
+                    // Check if the clicked element is a pixel
+                    if (event.target.classList.contains('pixel')) {
+                    event.target.style.backgroundColor = currentColor;
+                    }
+                });
+            }
+
+            // Setup clear functionality
+            function setupClearButton() {
+                const clearBtn = document.getElementById('clear-btn');
+                clearBtn.addEventListener('click', function() {
+                    if (!confirm('Are you sure you want to clear the grid?')) {
+                        return;
+                    }
+                    document.querySelectorAll('.pixel').forEach(function(pixel) {
+                        pixel.style.backgroundColor = 'white';
+                    });
+                    // Clear url parameters from location bar
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                });
+            }
+
+            // Setup share functionality
+            function setupShareButton() {
+                const shareBtn = document.getElementById('share-btn');
+                shareBtn.addEventListener('click', function() {
+                    const pattern = Array.from(document.querySelectorAll('.pixel')).map(pixel => COLORS.indexOf(pixel.style.backgroundColor)).join('');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('pattern', pattern);
+                    navigator.clipboard.writeText(url.href);
+                    alert('URL copied to clipboard!');
+                    // Set new url in location bar
+                    window.history.replaceState({}, document.title, url);
+                });
+            }
+
+            // Get initial pattern from URL
+            function getInitialPattern() {
+                const url = new URL(window.location.href);
+                const pattern = url.searchParams.get('pattern');
+                // Pattern should consist of ROW * COLS digits (0-8)
+                if (pattern && pattern.length === ROWS * COLS && /^[0-8]+$/.test(pattern)) {
+                    return pattern;
+                }
+                // Otherwise, return a string of 1s
+                return '1'.repeat(ROWS * COLS);
+            }
+
+            // Initialize the app
+            function init() {
+                createColorPicker();
+                let initialPattern = getInitialPattern();
+                createGrid(initialPattern);
+                setupClearButton();
+                setupShareButton();
+            }
+
+            // Run initialization when the DOM is fully loaded
+            document.addEventListener('DOMContentLoaded', init);
+        </script>
+    </div>
+</body>
+</html>
