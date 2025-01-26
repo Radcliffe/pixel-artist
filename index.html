@@ -67,18 +67,23 @@
         <button id="share-btn">Share</button>
 
         <script>
-            let ROWS = 12;
-            let COLS = 12;
+            // Constants
+            const ROWS = 12;
+            const COLS = 12;
+            const PIXELS = ROWS * COLS;
+            const COLORS = Object.freeze(['black', 'white', 'red', 'orange', 'blue', 'green', 'yellow', 'purple', 'pink']);
 
-            // Define colors array
-            const COLORS = ['black', 'white', 'red', 'orange', 'blue', 'green', 'yellow', 'purple', 'pink'];
-            
+            // Cache DOM queries
+            const grid = document.getElementById('grid');
+            const colorPicker = document.getElementById('color-picker');
+            const clearBtn = document.getElementById('clear-btn');
+            const shareBtn = document.getElementById('share-btn');
+
             // Initialize current color
             let currentColor = 'black';
 
             // Create color picker
             function createColorPicker() {
-                const colorPicker = document.getElementById('color-picker');
                 COLORS.forEach(color => {
                     const colorBox = document.createElement('div');
                     colorBox.classList.add('color-box');
@@ -86,6 +91,9 @@
                     if (color === currentColor) {
                         colorBox.classList.add('selected');
                     }
+                    colorBox.setAttribute('role', 'button');
+                    colorBox.setAttribute('aria-label', `Select ${color} color`);
+                    colorBox.setAttribute('tabindex', '0');
                     colorPicker.appendChild(colorBox);
                 });
                 colorPicker.addEventListener('click', function(event) {
@@ -107,8 +115,7 @@
 
             // Create grid
             function createGrid(initialPattern) {
-                const grid = document.getElementById('grid');
-                for (let i = 0; i < ROWS * COLS; i++) {
+                for (let i = 0; i < PIXELS; i++) {
                     const pixel = document.createElement('div');
                     pixel.classList.add('pixel');
                     pixel.style.backgroundColor = COLORS[initialPattern[i]];
@@ -124,7 +131,6 @@
 
             // Setup clear functionality
             function setupClearButton() {
-                const clearBtn = document.getElementById('clear-btn');
                 clearBtn.addEventListener('click', function() {
                     if (!confirm('Are you sure you want to clear the grid?')) {
                         return;
@@ -140,28 +146,35 @@
 
             // Setup share functionality
             function setupShareButton() {
-                const shareBtn = document.getElementById('share-btn');
                 shareBtn.addEventListener('click', function() {
-                    const pattern = Array.from(document.querySelectorAll('.pixel')).map(pixel => COLORS.indexOf(pixel.style.backgroundColor)).join('');
+                    // Get pattern from grid
+                    const pattern = Array.from(
+                        document.querySelectorAll('.pixel')).map(
+                        pixel => COLORS.indexOf(pixel.style.backgroundColor)
+                    ).join('');
+
+                    // Copy URL to clipboard
                     const url = new URL(window.location.href);
                     url.searchParams.set('pattern', pattern);
                     navigator.clipboard.writeText(url.href);
                     alert('URL copied to clipboard!');
+
                     // Set new url in location bar
                     window.history.replaceState({}, document.title, url);
                 });
             }
 
-            // Get initial pattern from URL
             function getInitialPattern() {
-                const url = new URL(window.location.href);
-                const pattern = url.searchParams.get('pattern');
-                // Pattern should consist of ROW * COLS digits (0-8)
-                if (pattern && pattern.length === ROWS * COLS && /^[0-8]+$/.test(pattern)) {
-                    return pattern;
+                try {
+                    const url = new URL(window.location.href);
+                    const pattern = url.searchParams.get('pattern');
+                    return (pattern?.length === PIXELS && /^[0-8]+$/.test(pattern))
+                        ? pattern
+                        : '1'.repeat(PIXELS);
+                } catch (e) {
+                    console.error('URL parsing failed:', e);
+                    return '1'.repeat(PIXELS);
                 }
-                // Otherwise, return a string of 1s
-                return '1'.repeat(ROWS * COLS);
             }
 
             // Initialize the app
