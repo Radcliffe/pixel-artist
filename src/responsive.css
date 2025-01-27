@@ -6,7 +6,13 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
 }
-
+h1 {
+    font-family: "Pixelify Sans", serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 2.5rem;
+}
 .container {
     text-align: center;
     width: 100%;
@@ -15,7 +21,7 @@ body {
     box-sizing: border-box;
 }
 
-.color-picker {
+#color-picker {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -58,20 +64,16 @@ body {
 button {
     margin: 15px 5px;
     padding: 8px 16px;
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
+    background-color: #ddd;
+    border: 1px solid #ccc;
     border-radius: 4px;
     cursor: pointer;
-}
-
-button:hover {
-    background-color: #e0e0e0;
 }
 
 @media (max-width: 600px) {
     body {
         align-items: center;
-        min-width: 100vw;
+        width: 100%;
     }
     
     .container {
@@ -88,7 +90,4 @@ button:hover {
         height: 30px;
     }
 
-    #grid {
-        max-width: 600px;
-    }
 }
